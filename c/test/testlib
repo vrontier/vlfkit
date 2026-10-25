@@ -1,0 +1,42 @@
+
+TMP=/tmp/vttest
+prog=$0
+
+trap 'bailout "interrupted"' INT QUIT KILL
+
+bailout(){
+   echo "bailout: $*" >&2
+   cleanup
+   exit 1
+}
+
+executable(){
+   type $1 > /dev/null 2>&1
+   return $?
+}
+
+skip(){
+   echo "$prog $* SKIPPED"
+}
+
+result(){
+[ $? -eq 0 ] && echo "$prog $* PASS" || {
+   echo "$prog $* FAILED"
+   cleanup
+   exit 1
+   }
+}
+
+sample_count_sr(){
+   vtstat -i $1 | awk '($1 == "samples:"){print $2}'
+}
+
+type md5 > /dev/null && MD5=md5 || {
+   type gmd5sum > /dev/null && MD5=gmd5sum || {
+      type md5sum > /dev/null && MD5=md5sum || {
+         echo "needs md5, gmd5sum, or md5sum installing"
+         exit 1
+      }
+   }
+}
+

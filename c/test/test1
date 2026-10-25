@@ -1,0 +1,146 @@
+#!/bin/sh
+
+# Test vtstat, vtgen, vtcat, vtcard -d- and vtraw
+
+. ./testlib
+
+cleanup(){
+   rm -f $TMP.test1*
+}
+
+#
+#  vtgen
+#
+
+vtgen -r 192000 -na=0.3 | vtcat -E1.60359 > $TMP.test1a
+ns=$(sample_count_sr $TMP.test1a)
+test "$ns" -eq 307890
+result "t1 ns=$ns"
+
+vtgen -r 192000 -na=0.3 -T 2010-01-01,+5 > $TMP.test1a
+ns=$(sample_count_sr $TMP.test1a)
+test "$ns" -eq 960000
+result "t2 ns=$ns"
+
+vtgen -r 192000 -na=0.3 -T 2010-01-01,+5 > $TMP.test1a
+vtgen -r 192000 -na=0.3 -T 2010-01-01,+5 | vtcat > $TMP.test1b
+diff $TMP.test1a $TMP.test1b > /dev/null
+result "t3"
+ 
+vtgen -r 192000 -na=0.3 -T 2010-01-01,+5 | vtcat | vtcat > $TMP.test1b
+diff $TMP.test1a $TMP.test1b > /dev/null
+result "t4"
+
+vtcat < $TMP.test1a > $TMP.test1b
+diff $TMP.test1a $TMP.test1b > /dev/null
+result "t5"
+
+vtcat $TMP.test1a > $TMP.test1b
+diff $TMP.test1a $TMP.test1b > /dev/null
+result "t6"
+
+vtgen -r 192000 -na=0.3 -Tnow,+1.60359 | vtraw > $TMP.test1a
+ns=$(wc -c < $TMP.test1a)
+test "$ns" -eq 615780
+result "t7 ns=$ns"
+
+#
+#  vtstat -i tests
+#
+
+vtgen -n a=1.0 -r 32000 -T 1577836800.856875,+100 -c1 > $TMP.test1-1
+vtmix -c1 -c 1.9 < $TMP.test1-1 > $TMP.test1-2
+
+set -- $(vtstat -i < $TMP.test1-1 | $MD5)
+test "$1" = 1f0a383cfc337791045659bb47123ed2
+result "t8a1"
+
+set -- $(vtstat -i < $TMP.test1-2 | $MD5)
+test "$1" = 47f47d21b56702a9320232b17105f1e8
+result "t8a2"
+
+#
+#  vtstat -m tests
+#
+
+set -- $(vtstat -m < $TMP.test1-1 | $MD5)
+test "$1" = 678b2b153c229bd18179a45e0c6af384
+result "t8b1"
+
+set -- $(vtstat -m < $TMP.test1-2 | $MD5)
+test "$1" = bac96fe4ea60ebd72e2bfb8566538215
+result "t8b2"
+
+set -- $(vtstat -mp 13.2 < $TMP.test1-1 | $MD5)
+test "$1" = 7213d61d9e2a931903ef33300f84bd7f
+result "t8b3"
+
+set -- $(vtstat -mp 13.2 < $TMP.test1-2 | $MD5)
+test "$1" = c1eb7d3eb9c446d882087a6722dbe0a6
+result "t8b4"
+
+set -- $(vtstat -mp 13.2 -ote < $TMP.test1-2 | $MD5)
+test "$1" = 9740733ca283ebbec6e4dede5cddb404
+result "t8b5"
+
+set -- $(vtstat -mp 13.2 -otr < $TMP.test1-2 | $MD5)
+test "$1" = d719ae658e2a419a15fb8b00346a7d58
+result "t8b6"
+
+#
+#  vtstat -h tests
+#
+
+set -- $(vtstat -h bins=101,min=-2.5,max=2.5 < $TMP.test1-1 | $MD5)
+test "$1" = 17f60e4150752dee15c27a94b2165d1c
+result "t8c1"
+
+set -- $(vtstat -h bins=101,min=-2.5,max=2.5 < $TMP.test1-2 | $MD5)
+test "$1" = deb64ebdc1d7f78bd1d872c640ff05f9
+result "t8c2"
+
+set -- $(vtstat -h bins=101,min=-2.5,max=2.5 -p7.17 < $TMP.test1-1 | $MD5)
+test "$1" = d3fd0c42dd77513efcc777ab2de2033d
+result "t8c3"
+
+set -- $(vtstat -h bins=101,min=-2.5,max=2.5 -p7.17 < $TMP.test1-2 | $MD5)
+test "$1" = d7093501ca7c5a487e882613cef74da0
+result "t8c4"
+
+set -- $(vtstat -h bins=101,min=-2.5,max=2.5 -r < $TMP.test1-2 | $MD5)
+test "$1" = f3cda91a3f830351a25521c1a6d9f702
+result "t8c5"
+
+#
+#  vtcard, if available.
+#
+
+executable vtcard && {
+   vtcard -d- -r 192000 -b16 -c1 < $TMP.test1a > $TMP.test1b
+   ns=$(sample_count_sr $TMP.test1b)
+   test "$ns" -eq 307890
+   result "t9 ns=$ns"
+} || skip t9
+
+#
+#  vtcat
+#
+
+# Padding test
+vtgen -r 192000 -na=0.3 -T 2010-01-01_00:00:00,+5 > $TMP.test1a
+vtgen -r 192000 -na=0.3 -T 2010-01-01_00:00:05.5,+5 >> $TMP.test1a
+vtcat -p $TMP.test1a > $TMP.test1b
+ns=$(sample_count_sr $TMP.test1b)
+test "$ns" -eq $((192000 * 10 + 96000))
+result "t10a ns=$ns"
+
+# Negative timestamp handling
+
+t=$(vtgen -r32000 -na=0.1 -T2017-01-01,+10 |
+     vtcat -a -1483228800.0001 |
+     vtstat -i | sed -n 's/^start: //p')
+test "$t" = "1970-01-01_00:00:00.000000"
+result "t10b $t"
+
+cleanup
+
