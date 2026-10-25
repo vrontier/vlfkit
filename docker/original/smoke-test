@@ -1,0 +1,27 @@
+#!/bin/sh
+# Checks what Paul's test suite (test/runall) does not cover:
+# a lock-free buffer, a TCP stream and a vtvorbis round trip.
+# Each check prints the sample count and the number of timing breaks.
+
+D=$(mktemp -d)
+trap 'rm -rf $D' EXIT
+
+echo "--- lock-free buffer: 6 s written in real time, 3 s read"
+vtgen -t -r 48000 -s a=0.3,f=1000 -T now,+6 @vlfkit-smoke,4 2>$D/w.err &
+sleep 1
+vtcat -E 3 @vlfkit-smoke $D/buf.vt 2>$D/r.err
+vtstat -i $D/buf.vt | grep -E 'samples|breaks'
+wait
+echo "    expected: about 144000 samples, 0 breaks"
+
+echo "--- TCP stream: 5 s from vtgen to vtstat"
+vtstat -i +41799 > $D/tcp.txt 2>&1 &
+sleep 1
+vtgen -r 48000 -s a=0.3,f=1000 -T 2010-01-01,+5 +127.0.0.1,41799
+wait
+grep -E 'samples|breaks' $D/tcp.txt
+echo "    expected: 240000 samples, 0 breaks"
+
+echo "--- vtvorbis: 5 s encoded and decoded"
+vtgen -r 48000 -s a=0.3,f=1000 -T 2010-01-01,+5 | vtvorbis -e | vtvorbis -d | vtstat -i | grep -E 'samples|breaks'
+echo "    expected: 240000 samples, 0 breaks"

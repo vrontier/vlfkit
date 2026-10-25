@@ -31,12 +31,16 @@ Release 0.9p consists of about 50 small programs (`vtcard`, `vtfilter`, `vtspec`
 | `original/vlfrx-tools-0.9p.pdf` | The manual for 0.9p |
 | `original/website/` | The project's web pages: overview, full documentation (`notes.html`), `vtsid.conf` reference |
 | `docs/provenance.md` | Where every file came from, with checksums |
+| `docs/building-the-original.md` | How to build, test and run 0.9p unchanged, with Docker or directly |
+| `docs/build-notes.md` | What building 0.9p on current systems showed, and the problems found |
+| `docs/formats.md` | The stream, buffer, network and vtvorbis formats, written from the source |
+| `docker/original/` | Dockerfile and smoke test for the unchanged 0.9p build |
 
 Coming: `c/` for the maintained C build, a directory for the new implementation, and `tests/` with reference outputs recorded from the original.
 
 ## Roadmap
 
-1. **Reference.** Build 0.9p as it is on Linux. Record reference outputs: known inputs (synthetic signals from `vtgen`, recordings, live network streams) through the main tools, with their outputs stored as test data.
+1. **Reference.** Build 0.9p as it is on Linux; [docs/building-the-original.md](docs/building-the-original.md) explains how, with Docker or directly on Debian, Ubuntu and Raspberry Pi OS. Record reference outputs: known inputs (synthetic signals from `vtgen`, recordings, live network streams) through the main tools, with their outputs stored as test data.
 2. **Maintained C build.** Make the C toolkit build cleanly on current Linux and Raspberry Pi OS, where the stations run. Every change is small, documented and tested against the reference outputs. macOS is not a target of the maintained build: 0.9p builds there unchanged with Homebrew GCC (not with Apple's compiler) and passes its tests, except for sound card input, but this is not supported; the rebuild runs natively on macOS. On Windows, the C build runs in WSL2, the Linux environment built into Windows; a native Windows port of the C code would mean rewriting the Unix-specific parts (pipes, shared memory, serial ports, ALSA/OSS) and is left to the rebuild.
 3. **Document the formats.** Write down the stream format, the buffer format and the vtvorbis network protocol from the source, as the specification the new implementation must meet.
 4. **Rebuild.** Port `vtlib` first, then the most-used tools, one at a time, each checked against the reference outputs. Rust is proposed as the language (real-time signal processing, predictable timing, memory safety, easy cross-compilation for the Raspberry Pi, native builds for Linux, macOS and Windows); the decision is still open. The new implementation runs natively on Linux, macOS and Windows: sound, network and file access go through cross-platform libraries, and the Unix-specific parts, which 0.9p concentrates in `vtlib`, are designed for all three systems from the start. The XForms interface of `vtscope` will not be ported but replaced.
@@ -46,7 +50,7 @@ Related work by Paul, such as EbNaut and LCnetgen, is not part of this repositor
 
 ## Status
 
-Step 0: the original is imported. Nothing has been built or changed yet.
+Step 1 under way. The original is imported. 0.9p builds unchanged and passes its tests on current Linux (x86-64, and 32-bit and 64-bit ARM in containers); the problems found are in `docs/build-notes.md`. The first draft of `docs/formats.md` is written. Reference outputs are not yet recorded, and nothing in the code has been changed.
 
 ## Name
 
