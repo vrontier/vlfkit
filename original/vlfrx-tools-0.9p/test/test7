@@ -1,0 +1,219 @@
+#!/bin/sh
+
+# Test vttoga and vtspot
+
+. ./testlib
+
+cleanup(){
+   rm -f $TMP.1
+}
+
+#  Test with a zero dispersion short pulse
+
+set -- $(vtgen -r64000 -T0.6,+1.4 -pa=0.1,f=1,d=0.00001 |
+           vtmix -c0.743 -c-0.669 -c1 |
+           vttoga -p90,0,E -a0.09 -N1)
+ok=$(echo "$2" | awk '($1 > 1-20e-6 && $1 < 1+20e-6)')
+test "$ok" != ""
+result "t1a $2"
+
+ok=$(echo "$5" | awk '($1 > 131.9  && $1 < 132.1)')
+test "$ok" != ""
+result "t1b $5"
+
+#  Test with a simulated sferic
+
+set -- $(vtgen -r64000 -T0.6,+1.4 -l a=0.1,r=4000 | vttoga -a 0.05 -N1)
+ok=$(echo "$2" | awk '($1 > 1.01355 && $1 < 1.01359)')
+test "$ok" != ""
+result "t2a $2"
+
+#
+#  vtspot -b option
+#
+
+set -- $(vtspot -b 53.703N,2.072W 49.396,11.125)
+test "$1" = 1028.390
+result "t3a $1"
+test "$2" = 112.4
+result "t3b $2"
+
+set -- $(vtspot -b 53.703N,2.072W 38.3563455,-76.6206424)
+test "$1" = 5716.152 
+result "t3c $1"
+test "$2" = 284.7
+result "t3d $2"
+
+set -- $(vtspot -b -- 53.703N,2.072W -21.816328,+114.165585)
+test "$1" = 13661.049
+result "t3e $1"
+test "$2" = 82.4
+result "t3f $2"
+
+echo "
+   53.703N,2.072W 39.88889N,74.90556W
+   25.43N,81.84E 47.5208333,-52.9583333 some rest
+
+   35.2730,-80.3706 61.6480122,-149.287309
+   44.9396788,12.1293576 49.444444,11.848333 and etc
+" | vtspot -b > $TMP.1
+
+set -- $($MD5 < $TMP.1)
+test "$1" = cc40553b8fbfe2e59b9b0c9149f29b77
+result "t4a"
+
+echo "
+   53.703N,2.072W 39.88889N,74.90556W 2022-01-01_12:30
+   25.43N,81.84E 47.5208333,-52.9583333 2022-01-01_13:30 some rest
+
+   35.2730,-80.3706 61.6480122,-149.287309 2022-01-06
+   44.9396788,12.1293576 49.444444,11.848333 2022-12-01_12:00 and etc
+" | vtspot -sb > $TMP.1
+
+set -- $($MD5 < $TMP.1)
+test "$1" = 4897a63ea5debe2b04c00cf653e930f3
+result "t4b $1"
+
+#
+#  vtspot -q1 options
+#
+
+set -- $(vtspot -q1 | $MD5)
+test "$1" = f1d729245389563ab1fb1fb9b0b49e23
+result "t5a"
+
+set -- $(vtspot -c 0.9876 -q1 | $MD5)
+test "$1" = 8d2987d5110664940a51e49d8f03cc79
+result "t5b"
+
+#set -- $(vtspot -c model_elf1 -q1 | $MD5)
+#test "$1" = 39a9840958c79476320ff8fd1baa342b
+#result "t5c"
+
+#set -- $(vtspot -c model_vlf1 -q1 | $MD5)
+#test "$1" = 1774186b5aeb0d015f29325cab7f7466
+#result "t5d"
+
+#set -- $(vtspot -c model_vlf2 -q1 | $MD5)
+#test "$1" = 1774186b5aeb0d015f29325cab7f7466
+#result "t5e"
+
+#
+#  vtspot -q2 options
+#
+
+set -- $(vtspot -q2 44.9396788,12.1293576 49.444444,11.848333 2022-12-01_12:00)
+test "$1" = 0.9922
+result "t5e"
+
+#set -- $(vtspot -c model_elf1 -q2 44.9396788,12.1293576 49.444444,11.848333 2022-12-01_12:00)
+#test "$1" = 0.4370
+#result "t5f"
+
+#set -- $(vtspot -c model_vlf1 -q2 44.9396788,12.1293576 49.444444,11.848333 2022-12-01_12:00)
+#test "$1" = 0.9583
+#result "t5g"
+
+#set -- $(vtspot -c model_vlf2 -q2 44.9396788,12.1293576 49.444444,11.848333 2022-12-01_12:00)
+#test "$1" = 0.9583
+#result "t5h"
+
+#
+#  vtspot -d option
+#
+
+set -- $(vtspot -d 53.703N,2.072W 82.4 13660.62)
+test "$1" = "-21.802,114.178"
+result "t6a $1"
+
+echo "
+   53.703N,2.072W 92 3400
+   25.43N,81.84E -120 24 some rest
+
+   35.2730,-80.3706 -240 5000
+   44.9396788,12.1293576 330 2000 and etc
+" | vtspot -d > $TMP.1
+
+set -- $($MD5 < $TMP.1)
+test "$1" = 1abd8d029169e88171f68fc88133d2de
+result "t6b"
+
+#
+#  vtspot -c option
+#
+
+set -- $(vtspot -c 0.9922 T/53.703N,2.072W/1522493298.069741 T/44.96N,7.42E/1522493298.065848 T/52:09:47.26N,21:01:51.38E/1522493298.069540 | head -1)
+test "$2" = "44.594,8.948"
+result "t7a $2"
+test "$3" = 1522493298.065420
+result "t7b $3"
+
+set -- $(vtspot -c 0.9922 T/53.703N,2.072W/1522493298.069741 T/44.96N,7.42E/1522493298.065848 T/52:09:47.26N,21:01:51.38E/1522493298.069540 | tail -1)
+test "$2" = "39.922,8.475"
+result "t7c $2"
+test "$3" = 1522493298.063943
+result "t7d $3"
+
+#
+#  vtspot measurement sets
+#
+
+set -- $(vtspot B/53.703N,2.072W/82.4 B/52:09:47.26N,21:01:51.38E/101.5 | head -1)
+test "$2" = "-23.995,116.145"
+result "t8a $2"
+
+set -- $(vtspot B/53.703N,2.072W/82.4 B/52:09:47.26N,21:01:51.38E/101.5 | tail -1)
+test "$2" = "23.995,-63.855"
+result "t8b $2"
+
+set -- $(vtspot B/53.703N,2.072W/82.4 B/52:09:47.26N,21:01:51.38E/101.5 B/44.96N,7.42E/95.3)
+
+test "$2" = "-23.934,116.088"
+result "t9a $2"
+
+set -- $(vtspot -c 0.9922 T/53.703N,2.072W/1522493298.069741 T/44.96N,7.42E/1522493298.065848 T/52:09:47.26N,21:01:51.38E/1522493298.069540 B/53.703N,2.072W/148.3)
+
+test "$2" = "39.925,8.476"
+result "t9b $2"
+
+test "$3" = 1522493298.063945
+result "t9c $3"
+
+#
+#  vtspot -s option
+#
+
+set -- $(vtspot -s 53.703N,2.072W 2022-06-21_11:30)
+test "$1" = 162.0
+result "t10a $1"
+test "$2" = 58.8
+result "t10b $2"
+
+echo "
+   53.703N,2.072W 2022-06-21_11:00
+   36.804163S,144.67559E 2022-06-21_12:00 some rest
+
+   37.35348N,79.19450W 2022-06-21_13:00
+   +08.387015,+77.752762 2022-06-21_14:00
+" | vtspot -s > $TMP.1
+
+set -- $($MD5 < $TMP.1)
+test "$1" = 4b0ab494fc411f73a6eb45d0fdb918a4
+result "t10c"
+
+#
+#  vtspot -g option
+#
+
+set -- $(vtspot -g -- 53.703N,2.072W -21.816328,+114.165585 1.0 | $MD5)
+test "$1" = a067c6c231374cf6a13b2295e4c94987
+result "t11a"
+
+
+#
+#
+#
+
+cleanup
+
+
