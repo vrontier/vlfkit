@@ -11,8 +11,8 @@ Paul has passed away. His website may not stay online, and software that nobody 
 We commit to three things:
 
 1. **Preserve.** Paul's last release, 0.9p, is kept here exactly as he published it, together with its manual and web pages. It is never edited; it is the reference for everything else.
-2. **Maintain.** A maintained build of the C toolkit, with only the changes needed to build and run on current Linux, macOS and the Raspberry Pi. Stations that depend on vlfrx-tools today should have a version that keeps working.
-3. **Rebuild.** A new implementation, tool by tool, that is compatible with the original: the same stream formats, the same network protocol, the same timestamps, so that old and new tools can be mixed in one pipeline. The programs keep their names (`vtcard`, `vtfilter`, `vtspec` and so on), so that existing station scripts keep working. Every rebuilt tool is checked against the output of the original before it replaces it.
+2. **Maintain.** A maintained build of the C toolkit, with only the changes needed to build and run on current Linux, macOS and the Raspberry Pi, and on Windows through WSL2. Stations that depend on vlfrx-tools today should have a version that keeps working.
+3. **Rebuild.** A new implementation, tool by tool, that runs natively on Linux, macOS and Windows and is compatible with the original: the same stream formats, the same network protocol, the same timestamps, so that old and new tools can be mixed in one pipeline. The programs keep their names (`vtcard`, `vtfilter`, `vtspec` and so on), so that existing station scripts keep working. Every rebuilt tool is checked against the output of the original before it replaces it.
 
 What we will not do: change the meaning of a format or a timestamp, remove a capability the original had without saying so, or present Paul's work as our own. His name and copyright stay on everything derived from it.
 
@@ -37,9 +37,9 @@ Coming: `c/` for the maintained C build, a directory for the new implementation,
 ## Roadmap
 
 1. **Reference.** Build 0.9p as it is on Linux. Record reference outputs: known inputs (synthetic signals from `vtgen`, recordings, live network streams) through the main tools, with their outputs stored as test data.
-2. **Maintained C build.** Make the C toolkit build cleanly on current Linux, macOS and Raspberry Pi OS. Every change is small, documented and tested against the reference outputs.
+2. **Maintained C build.** Make the C toolkit build cleanly on current Linux, macOS and Raspberry Pi OS. Every change is small, documented and tested against the reference outputs. On Windows, the C build runs in WSL2, the Linux environment built into Windows; a native Windows port of the C code would mean rewriting the Unix-specific parts (pipes, shared memory, serial ports, ALSA/OSS) and is left to the rebuild.
 3. **Document the formats.** Write down the stream format, the buffer format and the vtvorbis network protocol from the source, as the specification the new implementation must meet.
-4. **Rebuild.** Port `vtlib` first, then the most-used tools, one at a time, each checked against the reference outputs. Rust is proposed as the language (real-time signal processing, predictable timing, memory safety, easy cross-compilation for the Raspberry Pi); the decision is still open. The XForms interface of `vtscope` will not be ported but replaced.
+4. **Rebuild.** Port `vtlib` first, then the most-used tools, one at a time, each checked against the reference outputs. Rust is proposed as the language (real-time signal processing, predictable timing, memory safety, easy cross-compilation for the Raspberry Pi, native builds for Linux, macOS and Windows); the decision is still open. The new implementation runs natively on Linux, macOS and Windows: sound, network and file access go through cross-platform libraries, and the Unix-specific parts, which 0.9p concentrates in `vtlib`, are designed for all three systems from the start. The XForms interface of `vtscope` will not be ported but replaced.
 5. **Hardware.** Sound card input, SDR input and GPS timing (`vtcard`, `vtsoapy`, `vtrtlsdr`, `vtubx`) come last, tested on a Raspberry Pi.
 
 Related work by Paul, such as EbNaut and LCnetgen, is not part of this repository for now.
