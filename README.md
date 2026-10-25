@@ -1,6 +1,6 @@
-# vlfrx
+# vlfkit
 
-vlfrx continues Paul Nicholson's vlfrx-tools, the VLF Receiver Software Toolkit: the original kept intact, kept building, and rebuilt for the next twenty years.
+vlfkit continues Paul Nicholson's vlfrx-tools, the VLF Receiver Software Toolkit: the original kept intact, kept building, and rebuilt into the future.
 
 ## Mission
 
@@ -50,7 +50,9 @@ Step 0: the original is imported. Nothing has been built or changed yet.
 
 ## Name
 
-vlfrx stands for VLF receiver, after the title of Paul's project, the VLF Receiver Software Toolkit. vlfrx-tools refers to his original; vlfrx is this continuation of it.
+vlfkit stands for VLF toolkit. It echoes the title of Paul's project, the VLF Receiver Software Toolkit, and says plainly what the project is, without taking his project's name. vlfrx-tools refers to his original; vlfkit is this continuation of it.
+
+The name vlfrx itself was considered and set aside: it is already used by other projects, among them a Python library on PyPI and a VLF receiver for the Teensy microcontroller, and a third project of the same name would confuse people looking for any of them. vlfkit was free on GitHub, crates.io and PyPI when it was chosen.
 
 ## License
 
