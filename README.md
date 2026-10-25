@@ -1,6 +1,6 @@
-# vlfrx-tools
+# vlfrx
 
-A home for Paul Nicholson's VLF Receiver Software Toolkit: the original kept intact, kept building, and rebuilt for the next twenty years.
+vlfrx continues Paul Nicholson's vlfrx-tools, the VLF Receiver Software Toolkit: the original kept intact, kept building, and rebuilt for the next twenty years.
 
 ## Mission
 
@@ -12,7 +12,7 @@ We commit to three things:
 
 1. **Preserve.** Paul's last release, 0.9p, is kept here exactly as he published it, together with its manual and web pages. It is never edited; it is the reference for everything else.
 2. **Maintain.** A maintained build of the C toolkit, with only the changes needed to build and run on current Linux, macOS and the Raspberry Pi. Stations that depend on vlfrx-tools today should have a version that keeps working.
-3. **Rebuild.** A new implementation, tool by tool, that is compatible with the original: the same stream formats, the same network protocol, the same timestamps, so that old and new tools can be mixed in one pipeline. Every rebuilt tool is checked against the output of the original before it replaces it.
+3. **Rebuild.** A new implementation, tool by tool, that is compatible with the original: the same stream formats, the same network protocol, the same timestamps, so that old and new tools can be mixed in one pipeline. The programs keep their names (`vtcard`, `vtfilter`, `vtspec` and so on), so that existing station scripts keep working. Every rebuilt tool is checked against the output of the original before it replaces it.
 
 What we will not do: change the meaning of a format or a timestamp, remove a capability the original had without saying so, or present Paul's work as our own. His name and copyright stay on everything derived from it.
 
@@ -47,6 +47,10 @@ Related work by Paul, such as EbNaut and LCnetgen, is not part of this repositor
 ## Status
 
 Step 0: the original is imported. Nothing has been built or changed yet.
+
+## Name
+
+vlfrx stands for VLF receiver, after the title of Paul's project, the VLF Receiver Software Toolkit. vlfrx-tools refers to his original; vlfrx is this continuation of it.
 
 ## License
 
