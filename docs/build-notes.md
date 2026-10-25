@@ -12,7 +12,7 @@ First round: 2026-10-25.
 | Debian 13 trixie, x86-64 (container on `max`) | gcc 14.2 | all 50 programs | all pass | 1 warning |
 | Ubuntu 26.04 LTS, x86-64 (container on `max`) | gcc 15.2 | all 50 programs | all pass | 2 warnings |
 | Debian 13 trixie, arm64 (container on the Mac; the base of 64-bit Raspberry Pi OS) | gcc 14.2 | all 50 programs | all pass | 1 warning |
-| Debian 13 trixie, armhf (emulated container; the base of 32-bit Raspberry Pi OS) | gcc 14.2 | pending | pending | |
+| Debian 13 trixie, armhf (emulated container; the base of 32-bit Raspberry Pi OS) | gcc 14.2 | all 50 programs | all pass | 1 warning; emulated with QEMU, not yet confirmed on a real Pi |
 | macOS 27.0.1, Apple silicon | Apple clang | 8 shell scripts only, no C program | — | see problems 1 to 3 |
 | macOS 27.0.1, Apple silicon | Homebrew gcc 16.2, `--without-x11` | all except `vtcard`, `vtscope`, `vtspec` | all pass (t9 in test1 skipped) | see problems 3 and 4 |
 | Windows 11, WSL2 | — | not tried | — | see below |
