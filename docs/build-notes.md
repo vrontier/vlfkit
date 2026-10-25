@@ -23,6 +23,8 @@ Paul's test suite covers `vtgen`, `vtcat`, `vtstat`, `vtraw`, `vtwrite`, `vtread
 
 ## Problems found
 
+macOS is not a target of the maintained build (decided 2026-10-25): stations run Linux, mostly on the Raspberry Pi, and the rebuild will run natively on macOS. Problems 1 to 4 are therefore recorded for reference only and will not be fixed in the maintained build; 0.9p builds on macOS unchanged with Homebrew GCC, as described above.
+
 1. **macOS: nested functions.** Seven programs (`vtcat`, `vtfilter`, `vtpolar`, `vttime`, `vttoga`, `vtspot`, `vtubx`) define functions inside functions, a GCC extension that clang does not support. Apple's compiler therefore cannot build them. Homebrew's GCC can, and does. The maintained build can either require GCC on macOS or move these functions out to file scope; the second is a mechanical change and also helps any future clang or BSD build.
 2. **macOS: `-allow_stack_execute`.** When the compiler accepts `-fnested-functions` (old Apple GCC did), `configure` adds the linker option `-allow_stack_execute`, which today's Apple linker rejects, so even programs without nested functions fail to link with Apple clang.
 3. **macOS: no sound input.** `vtcard` supports ALSA and OSS only, and macOS has neither; it fails to compile. `configure --without-soundcard` leaves it out. A Core Audio input belongs to the rebuild, not the maintained build. XForms is not available from Homebrew either, so `vtscope` and `vtspec` need `--without-x11`.
