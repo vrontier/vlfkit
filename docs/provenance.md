@@ -29,6 +29,10 @@ Every file under `original/` was taken on 2026-10-25 from the copy of Paul Nicho
 | `original/website/vlfrx-tools.html` | `7a686110ec0dc88e715044e1593acbb6913f4f3f7c53926153fb5956e575b7dd` |
 | `original/website/vtsid.conf.html` | `e92c7777ee77514256450aa4c945004182e05d1074128293748244611d890a3c` |
 
+## License of the imported files
+
+Every source file of 0.9p carries Paul Nicholson's copyright and the Simplified (2-clause) BSD license in its header; `LICENSE` is copied from there. His download page (`original/website/index.html` and `vlfrx-tools.html`) states: "This software is released under the Simplified BSD license." The PDF manual and the web pages carry no license of their own. We read Paul's statement as covering vlfrx-tools as a whole, its documentation included, which matches how he shared all of his work, and we redistribute the manual and the web pages under the same license, with his copyright. Anyone who holds rights to these files and sees this differently is asked to open an issue; we will respond.
+
 ## Notes
 
 - The changelog in 0.9p ends with the entry for 0.9n; the changes in 0.9o and 0.9p are not described there.

@@ -60,7 +60,7 @@ The name vlfrx itself was considered and set aside: it is already used by other 
 
 ## License
 
-vlfrx-tools is released under the Simplified (2-clause) BSD license, copyright Paul Nicholson; see `LICENSE`. The maintained build and the new implementation are released under the same license, and keep his copyright notice next to that of their contributors.
+vlfrx-tools is released under the Simplified (2-clause) BSD license, copyright Paul Nicholson; see `LICENSE`. We redistribute his manual and web pages under the same license; `docs/provenance.md` explains why. The maintained build and the new implementation are released under the same license, and keep his copyright notice next to that of their contributors.
 
 ## Credits
 
