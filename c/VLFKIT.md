@@ -11,4 +11,15 @@ Build and install it as described for the original in `docs/building-the-origina
 
 ## Changes against 0.9p
 
-None yet.
+- **vtvorbis: reconnects after a dropped uplink instead of exiting.** With `-n` or `-u`, a dropped connection made vtvorbis exit silently with status 0 before `-k` could reconnect, because the library ends programs quietly on SIGPIPE. vtvorbis now ignores SIGPIPE while sending to a server, logs the failure and, with `-k`, reconnects. It also no longer crashes when the server cannot be reached at start-up with `-k`, retries a failed host name lookup with `-k`, and logs send errors without `-v`. For stations on 0.9p that don't want to switch builds, the change is also available as a patch: `c/patches/0001-vtvorbis-reconnect.patch` (see below). Tests: `c/tests/vtvorbis-reconnect/`.
+
+## Patches for 0.9p
+
+`c/patches/` holds changes that stations running 0.9p can apply to their own source tree:
+
+    cd vlfrx-tools-0.9p
+    patch -p1 < 0001-vtvorbis-reconnect.patch
+    make vtvorbis
+    sudo install -p vtvorbis /usr/local/bin/
+
+The patches are written against 0.9p; on older releases they may not apply unchanged.

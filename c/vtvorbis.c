@@ -140,6 +140,10 @@ static void write_shout( uint8_t *data, int nbytes)
          if (!KFLAG)
             VT_bailout( "uplink connect failed: %s", shout_get_error( sh));
          VT_report( 0, "uplink connect failed: %s", shout_get_error( sh));
+         // Discard the handle so that the retry starts with a fresh one
+         shout_free( sh);
+         shout_shutdown();
+         sh = NULL;
          longjmp( link_failed, 1);
       }
       else
@@ -188,27 +192,41 @@ static int net_fh = -1;                                        // Socket handle
 static void net_connect( void)
 {
    VT_report( 1, "connecting to host %s port %d", net_host, net_port);
- 
-   if ((net_fh = socket( AF_INET, SOCK_STREAM, 0)) < 0)
-      VT_bailout( "cannot open socket: %s", strerror( errno));
 
-   struct hostent *dest = gethostbyname( net_host);
-   if (!dest) VT_bailout( "cannot reach %s: %s", net_host, strerror( errno));
-  
-   struct sockaddr_in sa;
-   memset( &sa, 0, sizeof( sa));
-   sa.sin_family = AF_INET;
-   memcpy( &sa.sin_addr.s_addr, dest->h_addr, dest->h_length);
-   sa.sin_port = htons( net_port);
-
+   // With -k, keep trying: the host name may not resolve while the network
+   // is down, and each attempt gets a fresh socket because the state of a
+   // socket after a failed connect() is unspecified.
    while (1)
    {
+      struct hostent *dest = gethostbyname( net_host);
+      if (!dest)
+      {
+         if (!KFLAG) VT_bailout( "cannot reach %s: %s",
+                                 net_host, hstrerror( h_errno));
+         VT_report( 1, "cannot resolve %s: %s", net_host, hstrerror( h_errno));
+         usleep( 5000000);
+         continue;
+      }
+
+      if ((net_fh = socket( AF_INET, SOCK_STREAM, 0)) < 0)
+         VT_bailout( "cannot open socket: %s", strerror( errno));
+
+      struct sockaddr_in sa;
+      memset( &sa, 0, sizeof( sa));
+      sa.sin_family = AF_INET;
+      memcpy( &sa.sin_addr.s_addr, dest->h_addr, dest->h_length);
+      sa.sin_port = htons( net_port);
+
       if (connect( net_fh, (struct sockaddr *) &sa, sizeof( sa)) >= 0 )
          break;
 
-      if (KFLAG) usleep( 5000000);
-      else
+      if (!KFLAG)
          VT_bailout( "unable to connect to %s,%d", net_host, net_port);
+
+      VT_report( 1, "unable to connect to %s,%d: %s",
+                     net_host, net_port, strerror( errno));
+      close( net_fh);
+      usleep( 5000000);
    }
 
    set_keepalive( net_fh);
@@ -285,7 +303,7 @@ static void write_page( ogg_page *og)
       if (!net_port || !KFLAG)
          VT_bailout( "vorbis write failed: %s", strerror( errno));
 
-      VT_report( 1, "network send failed");
+      VT_report( 0, "network send failed: %s", strerror( errno));
       close( net_fh);  net_fh = -1;
       longjmp( link_failed, 1);
    }
@@ -318,6 +336,14 @@ static void run_encode( double Q)
 
    ogg_stream_state osv,          // Stream state - vorbis stream
                     ost;          //              - timestamp stream
+
+   // Zeroed so that the clean-up below is safe if the link fails before
+   // they have all been initialised, e.g. when the first connection fails.
+   memset( &vi, 0, sizeof( vi));
+   memset( &vd, 0, sizeof( vd));
+   memset( &vb, 0, sizeof( vb));
+   memset( &osv, 0, sizeof( osv));
+   memset( &ost, 0, sizeof( ost));
 
    if (setjmp( link_failed))
    {
@@ -1153,6 +1179,19 @@ int main( int argc, char *argv[])
 
    if (EFLAG) 
    {
+      // VT_init() makes SIGPIPE end the program quietly, which is right for
+      // a pipeline but not for a network uplink: a dropped connection would
+      // end vtvorbis before -k could reconnect.  Ignore SIGPIPE so that the
+      // failed write is reported and handled instead.
+      if (net_port || up_server)
+      {
+         struct sigaction sa;
+         sa.sa_handler = SIG_IGN;
+         sigemptyset( &sa.sa_mask);
+         sa.sa_flags = 0;
+         sigaction( SIGPIPE, &sa, NULL);
+      }
+
       if (background)
       {
          int flags = KEEP_STDOUT;
